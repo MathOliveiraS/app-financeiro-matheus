@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Controle Financeiro</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body{
+font-family: Arial;
+background:#0f172a;
+color:white;
+padding:20px;
+}
+
+.card{
+background:#1e293b;
+padding:20px;
+border-radius:10px;
+margin-bottom:20px;
+}
+
+input{
+width:100%;
+padding:10px;
+margin-top:10px;
+border-radius:6px;
+border:none;
+}
+
+button{
+margin-top:10px;
+padding:10px;
+width:100%;
+background:#22c55e;
+border:none;
+border-radius:6px;
+color:white;
+font-size:16px;
+}
+
+h1{
+text-align:center;
+}
+
+.total{
+font-size:24px;
+font-weight:bold;
+}
+</style>
+</head>
+
+<body>
+
+<h1>Controle Financeiro</h1>
+
+<div class="card">
+<h3>Adicionar gasto</h3>
+
+<input id="nome" placeholder="Nome do gasto">
+
+<input id="valor" placeholder="Valor">
+
+<button onclick="add()">Adicionar</button>
+
+</div>
+
+<div class="card">
+<h3>Gastos</h3>
+
+<div id="lista"></div>
+
+</div>
+
+<div class="card">
+<h3>Total gasto</h3>
+
+<div class="total" id="total">R$ 0</div>
+
+</div>
+
+<script>
+
+let gastos=[]
+
+function add(){
+
+let nome=document.getElementById("nome").value
+let valor=parseFloat(document.getElementById("valor").value)
+
+if(!nome || !valor)return
+
+gastos.push({nome,valor})
+
+render()
+
+}
+
+function render(){
+
+let lista=document.getElementById("lista")
+
+lista.innerHTML=""
+
+let total=0
+
+gastos.forEach(g=>{
+
+lista.innerHTML+=`<p>${g.nome} - R$ ${g.valor}</p>`
+
+total+=g.valor
+
+})
+
+document.getElementById("total").innerText="R$ "+total
+
+}
+
+</script>
+
+</body>
+</html>
