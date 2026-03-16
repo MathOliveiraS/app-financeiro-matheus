@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Painel Financeiro Matheus</title>
+<title>Painel Financeiro</title>
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -23,7 +23,7 @@ text-align:center;
 
 .container{
 display:grid;
-grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
 gap:20px;
 }
 
@@ -33,7 +33,7 @@ padding:20px;
 border-radius:12px;
 }
 
-input{
+input,select{
 width:100%;
 padding:10px;
 margin-top:10px;
@@ -52,13 +52,17 @@ color:white;
 font-size:16px;
 }
 
-.total{
-font-size:28px;
-font-weight:bold;
+.entrada{
+color:#22c55e;
 }
 
 .gasto{
-margin-top:5px;
+color:#ef4444;
+}
+
+.total{
+font-size:28px;
+font-weight:bold;
 }
 
 </style>
@@ -67,23 +71,42 @@ margin-top:5px;
 
 <body>
 
-<h1>Painel Financeiro</h1>
+<h1>Controle Financeiro</h1>
 
 <div class="container">
 
 <div class="card">
 
-<h3>Saldo do mês</h3>
+<h3>Saldo atual</h3>
+<div class="total" id="saldo">0</div>
 
-<div class="total" id="saldo"></div>
+<h3>Total Entradas</h3>
+<div id="entradas">0</div>
+
+<h3>Total Gastos</h3>
+<div id="gastos">0</div>
 
 </div>
 
 <div class="card">
 
-<h3>Adicionar gasto</h3>
+<h3>Nova movimentação</h3>
 
-<input id="nome" placeholder="Nome">
+<select id="tipo">
+<option value="entrada">Entrada</option>
+<option value="gasto">Gasto</option>
+</select>
+
+<select id="categoria">
+<option>Salário</option>
+<option>Comida</option>
+<option>Gasolina</option>
+<option>Compras</option>
+<option>Contas</option>
+<option>Outros</option>
+</select>
+
+<input id="nome" placeholder="Descrição">
 
 <input id="valor" placeholder="Valor">
 
@@ -93,30 +116,9 @@ margin-top:5px;
 
 <div class="card">
 
-<h3>Gastos</h3>
+<h3>Histórico</h3>
 
 <div id="lista"></div>
-
-</div>
-
-<div class="card">
-
-<h3>Dívidas</h3>
-
-<div>Santander (40)</div>
-<div>Itaú 02 (12)</div>
-<div>Neon (5)</div>
-<div>Shopee (12)</div>
-
-</div>
-
-<div class="card">
-
-<h3>Fluxo do mês</h3>
-
-<div>Dia 01 → +500</div>
-<div>Dia 05 → +1500</div>
-<div>Dia 20 → +1500</div>
 
 </div>
 
@@ -128,26 +130,34 @@ margin-top:5px;
 
 </div>
 
+<div class="card">
+
+<h3>Previsão do mês</h3>
+
+<div id="previsao"></div>
+
+</div>
+
 </div>
 
 <script>
 
-let salario=3500
-
-let gastos=JSON.parse(localStorage.getItem("gastos"))||[]
+let dados=JSON.parse(localStorage.getItem("dados"))||[]
 
 function salvar(){
-localStorage.setItem("gastos",JSON.stringify(gastos))
+localStorage.setItem("dados",JSON.stringify(dados))
 }
 
 function add(){
 
+let tipo=document.getElementById("tipo").value
+let categoria=document.getElementById("categoria").value
 let nome=document.getElementById("nome").value
 let valor=parseFloat(document.getElementById("valor").value)
 
 if(!nome || !valor)return
 
-gastos.push({nome,valor})
+dados.push({tipo,categoria,nome,valor})
 
 salvar()
 
@@ -161,37 +171,52 @@ let lista=document.getElementById("lista")
 
 lista.innerHTML=""
 
-let total=0
+let entradas=0
+let gastos=0
 
-gastos.forEach(g=>{
+dados.forEach(d=>{
 
-lista.innerHTML+=`<div class="gasto">${g.nome} - R$ ${g.valor}</div>`
+if(d.tipo==="entrada"){
 
-total+=g.valor
+entradas+=d.valor
 
-})
+lista.innerHTML+=`<div class="entrada">+ ${d.nome} (${d.categoria}) R$ ${d.valor}</div>`
 
-let saldo=salario-total
+}else{
 
-document.getElementById("saldo").innerText="R$ "+saldo
+gastos+=d.valor
 
-grafico(total)
+lista.innerHTML+=`<div class="gasto">- ${d.nome} (${d.categoria}) R$ ${d.valor}</div>`
 
 }
 
-function grafico(total){
+})
+
+let saldo=entradas-gastos
+
+document.getElementById("saldo").innerText="R$ "+saldo
+document.getElementById("entradas").innerText="R$ "+entradas
+document.getElementById("gastos").innerText="R$ "+gastos
+
+document.getElementById("previsao").innerText="Saldo atual: R$ "+saldo
+
+grafico(entradas,gastos)
+
+}
+
+function grafico(entradas,gastos){
 
 new Chart(document.getElementById("grafico"),{
 
-type:"pie",
+type:"doughnut",
 
 data:{
 
-labels:["Gastos","Saldo"],
+labels:["Entradas","Gastos"],
 
 datasets:[{
 
-data:[total,salario-total]
+data:[entradas,gastos]
 
 }]
 
