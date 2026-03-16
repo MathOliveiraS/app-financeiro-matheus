@@ -1,21 +1,36 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Controle Financeiro</title>
+<meta charset="UTF-8">
+<title>Painel Financeiro Matheus</title>
+
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <style>
+
 body{
-font-family: Arial;
+font-family:Arial;
 background:#0f172a;
 color:white;
 padding:20px;
 }
 
+h1{
+text-align:center;
+}
+
+.container{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+gap:20px;
+}
+
 .card{
 background:#1e293b;
 padding:20px;
-border-radius:10px;
-margin-bottom:20px;
+border-radius:12px;
 }
 
 input{
@@ -37,25 +52,38 @@ color:white;
 font-size:16px;
 }
 
-h1{
-text-align:center;
-}
-
 .total{
-font-size:24px;
+font-size:28px;
 font-weight:bold;
 }
+
+.gasto{
+margin-top:5px;
+}
+
 </style>
+
 </head>
 
 <body>
 
-<h1>Controle Financeiro</h1>
+<h1>Painel Financeiro</h1>
+
+<div class="container">
 
 <div class="card">
+
+<h3>Saldo do mês</h3>
+
+<div class="total" id="saldo"></div>
+
+</div>
+
+<div class="card">
+
 <h3>Adicionar gasto</h3>
 
-<input id="nome" placeholder="Nome do gasto">
+<input id="nome" placeholder="Nome">
 
 <input id="valor" placeholder="Valor">
 
@@ -64,6 +92,7 @@ font-weight:bold;
 </div>
 
 <div class="card">
+
 <h3>Gastos</h3>
 
 <div id="lista"></div>
@@ -71,15 +100,45 @@ font-weight:bold;
 </div>
 
 <div class="card">
-<h3>Total gasto</h3>
 
-<div class="total" id="total">R$ 0</div>
+<h3>Dívidas</h3>
+
+<div>Santander (40)</div>
+<div>Itaú 02 (12)</div>
+<div>Neon (5)</div>
+<div>Shopee (12)</div>
+
+</div>
+
+<div class="card">
+
+<h3>Fluxo do mês</h3>
+
+<div>Dia 01 → +500</div>
+<div>Dia 05 → +1500</div>
+<div>Dia 20 → +1500</div>
+
+</div>
+
+<div class="card">
+
+<h3>Gráfico financeiro</h3>
+
+<canvas id="grafico"></canvas>
+
+</div>
 
 </div>
 
 <script>
 
-let gastos=[]
+let salario=3500
+
+let gastos=JSON.parse(localStorage.getItem("gastos"))||[]
+
+function salvar(){
+localStorage.setItem("gastos",JSON.stringify(gastos))
+}
 
 function add(){
 
@@ -89,6 +148,8 @@ let valor=parseFloat(document.getElementById("valor").value)
 if(!nome || !valor)return
 
 gastos.push({nome,valor})
+
+salvar()
 
 render()
 
@@ -104,15 +165,43 @@ let total=0
 
 gastos.forEach(g=>{
 
-lista.innerHTML+=`<p>${g.nome} - R$ ${g.valor}</p>`
+lista.innerHTML+=`<div class="gasto">${g.nome} - R$ ${g.valor}</div>`
 
 total+=g.valor
 
 })
 
-document.getElementById("total").innerText="R$ "+total
+let saldo=salario-total
+
+document.getElementById("saldo").innerText="R$ "+saldo
+
+grafico(total)
 
 }
+
+function grafico(total){
+
+new Chart(document.getElementById("grafico"),{
+
+type:"pie",
+
+data:{
+
+labels:["Gastos","Saldo"],
+
+datasets:[{
+
+data:[total,salario-total]
+
+}]
+
+}
+
+})
+
+}
+
+render()
 
 </script>
 
