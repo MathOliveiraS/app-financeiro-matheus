@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="UTF-8">
-<title>Painel Financeiro</title>
 
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<title>Controle Financeiro</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -22,15 +23,15 @@ text-align:center;
 }
 
 .container{
-display:grid;
-grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
-gap:20px;
+max-width:900px;
+margin:auto;
 }
 
 .card{
 background:#1e293b;
 padding:20px;
-border-radius:12px;
+border-radius:10px;
+margin-bottom:20px;
 }
 
 input,select{
@@ -61,7 +62,7 @@ color:#ef4444;
 }
 
 .total{
-font-size:28px;
+font-size:26px;
 font-weight:bold;
 }
 
@@ -77,26 +78,22 @@ font-weight:bold;
 
 <div class="card">
 
-<h3>Saldo atual</h3>
-<div class="total" id="saldo">0</div>
-
-<h3>Total Entradas</h3>
-<div id="entradas">0</div>
-
-<h3>Total Gastos</h3>
-<div id="gastos">0</div>
+<h3>Saldo</h3>
+<div class="total" id="saldo">R$ 0</div>
 
 </div>
 
 <div class="card">
 
-<h3>Nova movimentação</h3>
+<h3>Adicionar movimentação</h3>
 
+<label>Tipo</label>
 <select id="tipo">
 <option value="entrada">Entrada</option>
 <option value="gasto">Gasto</option>
 </select>
 
+<label>Categoria</label>
 <select id="categoria">
 <option>Salário</option>
 <option>Comida</option>
@@ -106,35 +103,25 @@ font-weight:bold;
 <option>Outros</option>
 </select>
 
-<input id="nome" placeholder="Descrição">
+<input id="descricao" placeholder="Descrição">
 
-<input id="valor" placeholder="Valor">
+<input id="valor" type="number" placeholder="Valor">
 
-<button onclick="add()">Adicionar</button>
+<button onclick="adicionar()">Adicionar</button>
 
 </div>
 
 <div class="card">
 
 <h3>Histórico</h3>
-
 <div id="lista"></div>
 
 </div>
 
 <div class="card">
 
-<h3>Gráfico financeiro</h3>
-
+<h3>Gráfico</h3>
 <canvas id="grafico"></canvas>
-
-</div>
-
-<div class="card">
-
-<h3>Previsão do mês</h3>
-
-<div id="previsao"></div>
 
 </div>
 
@@ -142,86 +129,81 @@ font-weight:bold;
 
 <script>
 
-let dados=JSON.parse(localStorage.getItem("dados"))||[]
+let dados = JSON.parse(localStorage.getItem("financeiro")) || []
 
 function salvar(){
-localStorage.setItem("dados",JSON.stringify(dados))
+
+localStorage.setItem("financeiro", JSON.stringify(dados))
+
 }
 
-function add(){
+function adicionar(){
 
-let tipo=document.getElementById("tipo").value
-let categoria=document.getElementById("categoria").value
-let nome=document.getElementById("nome").value
-let valor=parseFloat(document.getElementById("valor").value)
+let tipo = document.getElementById("tipo").value
+let categoria = document.getElementById("categoria").value
+let descricao = document.getElementById("descricao").value
+let valor = parseFloat(document.getElementById("valor").value)
 
-if(!nome || !valor)return
+if(!descricao || !valor) return
 
-dados.push({tipo,categoria,nome,valor})
+dados.push({
+tipo,
+categoria,
+descricao,
+valor
+})
 
 salvar()
-
 render()
 
 }
 
 function render(){
 
-let lista=document.getElementById("lista")
+let lista = document.getElementById("lista")
+lista.innerHTML = ""
 
-lista.innerHTML=""
+let entradas = 0
+let gastos = 0
 
-let entradas=0
-let gastos=0
+dados.forEach(item => {
 
-dados.forEach(d=>{
-
-if(d.tipo==="entrada"){
-
-entradas+=d.valor
-
-lista.innerHTML+=`<div class="entrada">+ ${d.nome} (${d.categoria}) R$ ${d.valor}</div>`
-
+if(item.tipo === "entrada"){
+entradas += item.valor
+lista.innerHTML += `<p class="entrada">+ ${item.descricao} (${item.categoria}) R$ ${item.valor}</p>`
 }else{
-
-gastos+=d.valor
-
-lista.innerHTML+=`<div class="gasto">- ${d.nome} (${d.categoria}) R$ ${d.valor}</div>`
-
+gastos += item.valor
+lista.innerHTML += `<p class="gasto">- ${item.descricao} (${item.categoria}) R$ ${item.valor}</p>`
 }
 
 })
 
-let saldo=entradas-gastos
+let saldo = entradas - gastos
 
-document.getElementById("saldo").innerText="R$ "+saldo
-document.getElementById("entradas").innerText="R$ "+entradas
-document.getElementById("gastos").innerText="R$ "+gastos
+document.getElementById("saldo").innerText = "R$ " + saldo
 
-document.getElementById("previsao").innerText="Saldo atual: R$ "+saldo
-
-grafico(entradas,gastos)
+grafico(entradas, gastos)
 
 }
 
-function grafico(entradas,gastos){
+let graficoChart
 
-new Chart(document.getElementById("grafico"),{
+function grafico(entradas, gastos){
 
+let ctx = document.getElementById("grafico")
+
+if(graficoChart){
+graficoChart.destroy()
+}
+
+graficoChart = new Chart(ctx,{
 type:"doughnut",
-
 data:{
-
 labels:["Entradas","Gastos"],
-
 datasets:[{
-
 data:[entradas,gastos]
-
 }]
-
 }
-
 })
 
 }
